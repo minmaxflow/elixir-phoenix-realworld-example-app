@@ -8,8 +8,12 @@
 use Mix.Config
 
 config :conduit,
-  ecto_repos: [Conduit.Repo],
-  generators: [binary_id: true]
+  ecto_repos: [Conduit.Repo]
+
+# config migration
+config :conduit, Conduit.Repo,
+  migration_timestamps: [type: :utc_datetime, inserted_at: :created_at],
+  migration_primary_key: [type: :binary_id]
 
 # Configures the endpoint
 config :conduit, ConduitWeb.Endpoint,
