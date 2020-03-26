@@ -7,7 +7,8 @@ config :conduit, Conduit.Repo,
   database: "conduit_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
-  pool_size: 10
+  pool_size: 10,
+  charset: "utf8mb4"
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
