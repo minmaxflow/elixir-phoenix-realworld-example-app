@@ -63,7 +63,7 @@ defmodule ConduitWeb.UserControllerTest do
 
     test "update user success", %{conn: conn, user: user} do
       conn = auth_login(conn)
-      conn = put(conn, Routes.user_path(conn, :update, @update_attrs))
+      conn = put(conn, Routes.user_path(conn, :update, user: @update_attrs))
       assert %{"username" => username, "email" => email} = json_response(conn, 200)["user"]
       assert @update_attrs.username == username
       assert user.email == email
@@ -79,7 +79,7 @@ defmodule ConduitWeb.UserControllerTest do
     end
 
     test "udpate user fail", %{conn: conn} do
-      conn = put(conn, Routes.user_path(conn, :update, @update_attrs))
+      conn = put(conn, Routes.user_path(conn, :update, user: @update_attrs))
       assert %{"errors" => %{"detail" => "Unauthorized"}} = json_response(conn, 401)
     end
   end
@@ -88,7 +88,9 @@ defmodule ConduitWeb.UserControllerTest do
     conn = post(conn, Routes.user_path(conn, :login), user: @valid_attrs)
     response = json_response(conn, 200)
     %{"user" => %{"token" => token}} = response
-    conn |> put_req_header("authorization", "Token " <> token)
+
+    # 注意，新的plug库有更严格的要求
+    conn |> recycle() |> put_req_header("authorization", "Token " <> token)
   end
 
   defp create_user(_) do
