@@ -1,5 +1,5 @@
 defmodule Conduit.Accounts.UserFollower do
-  use Ecto.Schema
+  use Conduit.Schema
   import Ecto.Changeset
 
   alias Conduit.Accounts.User

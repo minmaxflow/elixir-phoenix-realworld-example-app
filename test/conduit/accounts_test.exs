@@ -2,6 +2,7 @@ defmodule Conduit.AccountsTest do
   use Conduit.DataCase
 
   alias Conduit.Accounts
+  alias Conduit.Accounts.User
 
   describe "users" do
     alias Conduit.Accounts.User
@@ -62,6 +63,24 @@ defmodule Conduit.AccountsTest do
 
       assert {:error, :unauthorized} =
                Accounts.authenticate_by_username_password(@valid_attrs.email, "wrong pass")
+    end
+  end
+
+  describe "user follow" do
+    test "with follow/unfollow/profile together" do
+      user1 = insert_user(%{email: "user1@test.com", username: "usr1", password: "user1pass"})
+      user2 = insert_user(%{email: "user2@test.com", username: "usr2", password: "user2pass"})
+
+      assert %{following: false} = Accounts.get_profile(nil, user1.username)
+      assert %{following: false} = Accounts.get_profile(user1, user2.username)
+
+      assert {:ok, _} = Accounts.follow_user(user1, user2.username)
+      assert %{following: true} = Accounts.get_profile(user1, user2.username)
+      assert %{following: false} = Accounts.get_profile(nil, user2.username)
+
+      assert {:ok, _} = Accounts.unfollow_user(user1, user2.username)
+      assert %{following: false} = Accounts.get_profile(user1, user2.username)
+      assert %{following: false} = Accounts.get_profile(nil, user2.username)
     end
   end
 end

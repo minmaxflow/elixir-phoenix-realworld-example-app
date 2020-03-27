@@ -77,9 +77,10 @@ defmodule Conduit.Accounts do
   end
 
   def get_profile(current_user, followee_username) do
+    # 主键现在都是uuid类型
     uid =
       case current_user do
-        nil -> -1
+        nil -> Ecto.UUID.generate()
         current_user -> current_user.id
       end
 
