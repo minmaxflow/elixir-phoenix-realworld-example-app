@@ -18,7 +18,8 @@ config :conduit, Conduit.Repo,
 # with webpack to recompile .js and .css sources.
 config :conduit, ConduitWeb.Endpoint,
   http: [port: 4000],
-  debug_errors: true,
+  # 修改为false则可以在开发环境看到JSON的返回
+  debug_errors: false,
   code_reloader: true,
   check_origin: false,
   watchers: []
