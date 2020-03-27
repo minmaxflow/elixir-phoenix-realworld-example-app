@@ -23,6 +23,8 @@ defmodule ConduitWeb.ConnCase do
       use Phoenix.ConnTest
       alias ConduitWeb.Router.Helpers, as: Routes
 
+      import Conduit.TestHelpers
+
       # The default endpoint for testing
       @endpoint ConduitWeb.Endpoint
     end
