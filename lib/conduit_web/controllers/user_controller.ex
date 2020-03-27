@@ -18,7 +18,7 @@ defmodule ConduitWeb.UserController do
     end
   end
 
-  # 避免不传参数的是时候
+  # 避免不传参数的情况
   def login(conn, %{"user" => user_params}) do
     email = user_params["email"] || ""
     password = user_params["password"] || ""

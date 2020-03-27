@@ -47,5 +47,21 @@ defmodule Conduit.AccountsTest do
       user = insert_user(@valid_attrs)
       assert {:error, %Ecto.Changeset{}} = Accounts.update_user(user, @invalid_attrs)
     end
+
+    test "authenticate_by_username_password/2 " do
+      insert_user(@valid_attrs)
+
+      assert {:ok, %User{} = user} =
+               Accounts.authenticate_by_username_password(
+                 @valid_attrs.email,
+                 @valid_attrs.password
+               )
+
+      assert {:error, :not_found} =
+               Accounts.authenticate_by_username_password("wrong@test.com", @valid_attrs.password)
+
+      assert {:error, :unauthorized} =
+               Accounts.authenticate_by_username_password(@valid_attrs.email, "wrong pass")
+    end
   end
 end

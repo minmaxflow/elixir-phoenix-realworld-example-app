@@ -21,13 +21,13 @@ defmodule Conduit.TestHelpers do
     user
   end
 
-  def login(%{conn: conn, login_as: username}) do
+  def login(conn, username) do
     user = insert_user(%{username: username})
     {:ok, token, _} = Guardian.encode_and_sign(user)
 
     conn =
       conn
-      |> Plug.Conn.put_req_header("authorization", "Token: " <> token)
+      |> Plug.Conn.put_req_header("authorization", "Token " <> token)
 
     {conn, user}
   end
