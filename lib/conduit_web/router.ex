@@ -19,6 +19,8 @@ defmodule ConduitWeb.Router do
 
     post "/users", UserController, :create
     post "/users/login", UserController, :login
+
+    get "/api/profiles/:username", ProfileController, :profile
   end
 
   scope "/api", ConduitWeb do
@@ -26,5 +28,8 @@ defmodule ConduitWeb.Router do
 
     get "/user", UserController, :current
     put "/user", UserController, :update
+
+    post "/api/profiles/:username/follow", ProfileController, :follow
+    delete "/api/profiles/:username/follow", ProfileController, :unfollow
   end
 end

@@ -11,6 +11,7 @@ defmodule Conduit.Accounts.User do
 
     field :password, :string, virtual: true
     field :token, :string, virtual: true
+    field :following, :boolean, virtual: true, default: false
 
     timestamps()
   end

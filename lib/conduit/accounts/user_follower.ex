@@ -13,7 +13,7 @@ defmodule Conduit.Accounts.UserFollower do
   end
 
   @doc false
-  def changeset(user_follower, attrs) do
+  def changeset(user_follower, attrs \\ %{}) do
     user_follower
     |> cast(attrs, [])
     |> validate_required([])
