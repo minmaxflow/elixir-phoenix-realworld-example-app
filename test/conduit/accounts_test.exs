@@ -7,14 +7,11 @@ defmodule Conduit.AccountsTest do
     alias Conduit.Accounts.User
 
     @valid_attrs %{
-      bio: "some bio",
       email: "some@test.com",
       username: "username",
-      password: "password",
-      image: nil
+      password: "password"
     }
     @update_attrs %{
-      bio: "some updated bio",
       username: "newusername"
     }
     @invalid_attrs %{
@@ -31,10 +28,8 @@ defmodule Conduit.AccountsTest do
       assert {:ok, %User{} = user} = Accounts.create_user(@valid_attrs)
 
       assert %{
-               bio: "some bio",
                email: "some@test.com",
-               username: "username",
-               image: nil
+               username: "username"
              } = user
     end
 
@@ -45,7 +40,6 @@ defmodule Conduit.AccountsTest do
     test "update_user/2 with valid data updates the user" do
       user = insert_user(@valid_attrs)
       assert {:ok, %User{} = user} = Accounts.update_user(user, @update_attrs)
-      assert user.bio == "some updated bio"
       assert user.username == "newusername"
     end
 

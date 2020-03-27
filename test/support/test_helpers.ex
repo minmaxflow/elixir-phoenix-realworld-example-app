@@ -8,8 +8,6 @@ defmodule Conduit.TestHelpers do
     %{
       username: "user#{num}",
       email: "user#{num}@test.com",
-      bio: "user bio",
-      image: nil,
       password: "password"
     }
   end

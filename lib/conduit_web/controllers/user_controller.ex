@@ -18,9 +18,10 @@ defmodule ConduitWeb.UserController do
     end
   end
 
-  def login(conn, %{"user" => %{"email" => email, "password" => password}}) do
-    # email = user_params["email"]
-    # password = user_params["password"]
+  # 避免不传参数的是时候
+  def login(conn, %{"user" => user_params}) do
+    email = user_params["email"] || ""
+    password = user_params["password"] || ""
 
     with {:ok, user} <- Accounts.authenticate_by_username_password(email, password),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
