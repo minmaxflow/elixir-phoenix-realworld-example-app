@@ -9,7 +9,7 @@ defmodule Conduit.TestHelpers do
       username: "user#{num}",
       email: "user#{num}@test.com",
       bio: "user bio",
-      image: "/path/to/img",
+      image: nil,
       password: "password"
     }
   end
@@ -25,7 +25,7 @@ defmodule Conduit.TestHelpers do
 
   def login(%{conn: conn, login_as: username}) do
     user = insert_user(%{username: username})
-    {:ok, token, _} = encode_and_sign(user)
+    {:ok, token, _} = Guardian.encode_and_sign(user)
 
     conn =
       conn
