@@ -11,6 +11,12 @@ defmodule ConduitWeb.UserView do
   end
 
   def render("user.json", %{user: user}) do
-    %{email: user.email, username: user.username, bio: user.bio, image: user.image}
+    %{
+      email: user.email,
+      username: user.username,
+      bio: user.bio,
+      image: user.image,
+      token: user.token
+    }
   end
 end

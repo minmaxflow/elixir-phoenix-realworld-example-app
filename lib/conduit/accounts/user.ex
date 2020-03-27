@@ -10,6 +10,7 @@ defmodule Conduit.Accounts.User do
     field :password_hash, :string
 
     field :password, :string, virtual: true
+    field :token, :string, virtual: true
 
     timestamps()
   end
@@ -19,7 +20,7 @@ defmodule Conduit.Accounts.User do
     # 更新是可能会更新用户密码, 但是不要求一定更新
     user
     |> cast(attrs, [:email, :username, :bio, :image, :password])
-    |> validate_required([:email, :username, :bio, :image])
+    |> validate_required([:email, :username])
     |> validate_length(:username, min: 3, max: 20)
     # refer: https://gist.github.com/mgamini/4f3a8bc55bdcc96be2c6
     |> validate_format(:email, ~r/^[\w.!#$%&’*+\-\/=?\^`{|}~]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/i)
