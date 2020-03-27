@@ -1,5 +1,5 @@
 defmodule Conduit.Accounts.User do
-  use Ecto.Schema
+  use Conduit.Schema
   import Ecto.Changeset
 
   schema "users" do
@@ -16,14 +16,16 @@ defmodule Conduit.Accounts.User do
 
   @doc false
   def changeset(user, attrs) do
+    # 更新是可能会更新用户密码, 但是不要求一定更新
     user
-    |> cast(attrs, [:email, :username, :bio, :image])
+    |> cast(attrs, [:email, :username, :bio, :image, :password])
     |> validate_required([:email, :username, :bio, :image])
     |> validate_length(:username, min: 3, max: 20)
     # refer: https://gist.github.com/mgamini/4f3a8bc55bdcc96be2c6
     |> validate_format(:email, ~r/^[\w.!#$%&’*+\-\/=?\^`{|}~]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/i)
     |> unique_constraint(:username)
     |> unique_constraint(:email)
+    |> put_password_hash()
   end
 
   def register_chagneset(user, attrs) do

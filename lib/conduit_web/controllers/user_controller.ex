@@ -3,41 +3,51 @@ defmodule ConduitWeb.UserController do
 
   alias Conduit.Accounts
   alias Conduit.Accounts.User
+  alias ConduitWeb.Guardian
 
   action_fallback ConduitWeb.FallbackController
 
-  def index(conn, _params) do
-    users = Accounts.list_users()
-    render(conn, "index.json", users: users)
-  end
-
   def create(conn, %{"user" => user_params}) do
-    with {:ok, %User{} = user} <- Accounts.create_user(user_params) do
+    with {:ok, %User{} = user} <- Accounts.register_user(user_params),
+         {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
+      user = %{user | token: token}
+
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.user_path(conn, :show, user))
       |> render("show.json", user: user)
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
-    render(conn, "show.json", user: user)
-  end
+  def login(conn, %{"user" => %{"email" => email, "password" => password}}) do
+    # email = user_params["email"]
+    # password = user_params["password"]
 
-  def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Accounts.get_user!(id)
-
-    with {:ok, %User{} = user} <- Accounts.update_user(user, user_params) do
-      render(conn, "show.json", user: user)
+    with {:ok, user} <- Accounts.authenticate_by_username_password(email, password),
+         {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
+      user = %{user | token: token}
+      conn |> render("show.json", user: user)
+    else
+      _ -> {:error, :unauthorized}
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    user = Accounts.get_user!(id)
+  def current(conn, _params) do
+    # current_resource可能返回nil
+    with user <- Guardian.Plug.current_resource(conn),
+         token <- Guardian.Plug.current_token(conn) do
+      user = %{user | token: token}
+      conn |> render("show.json", user: user)
+    else
+      _ -> {:error, :unauthorized}
+    end
+  end
 
-    with {:ok, %User{}} <- Accounts.delete_user(user) do
-      send_resp(conn, :no_content, "")
+  def update(conn, %{"user" => user_params}) do
+    with user <- Guardian.Plug.current_resource(conn),
+         {:ok, %User{} = user} <- Accounts.update_user(user, user_params),
+         token <- Guardian.Plug.current_token(conn) do
+      user = %{user | token: token}
+      render(conn, "show.json", user: user)
     end
   end
 end

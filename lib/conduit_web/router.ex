@@ -5,7 +5,26 @@ defmodule ConduitWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :opt_auth do
+    plug ConduitWeb.AuthOptPipeLine
+  end
+
+  pipeline :auth do
+    plug ConduitWeb.AuthPipeLine
+  end
+
+  # 可选认证的
   scope "/api", ConduitWeb do
-    pipe_through :api
+    pipe_through [:api, :opt_auth]
+
+    post "/users", UserController, :create
+    post "/users/login", UserController, :login
+  end
+
+  scope "/api", ConduitWeb do
+    pipe_through [:api, :auth]
+
+    get "/user", UserController, :current
+    put "/user", UserController, :update
   end
 end
