@@ -4,8 +4,6 @@ defmodule Conduit.BlogTest do
   alias Conduit.Blog
 
   describe "tags" do
-    alias Conduit.Blog.Tag
-
     test "get_or_insert_tags" do
       assert tags = Blog.get_or_insert_tags(["tag1", "tag2", "tag3"])
 

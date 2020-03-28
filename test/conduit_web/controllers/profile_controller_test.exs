@@ -1,6 +1,10 @@
 defmodule ConduitWeb.ProfileControllerTest do
   use ConduitWeb.ConnCase
 
+  setup %{conn: conn} do
+    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+  end
+
   describe "user follow" do
     setup _ do
       user1 = insert_user(%{email: "user1@test.com", username: "usr1", password: "user1pass"})

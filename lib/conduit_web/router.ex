@@ -21,6 +21,8 @@ defmodule ConduitWeb.Router do
     post "/users/login", UserController, :login
 
     get "/profiles/:username", ProfileController, :profile
+
+    resources "/tags", TagController, only: [:index]
   end
 
   scope "/api", ConduitWeb do
