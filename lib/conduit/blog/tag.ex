@@ -1,5 +1,5 @@
 defmodule Conduit.Blog.Tag do
-  use Ecto.Schema
+  use Conduit.Schema
   import Ecto.Changeset
 
   schema "tags" do
