@@ -11,7 +11,7 @@ defmodule Conduit.Blog.Permalink do
     if size < 16 do
       :error
     else
-      String.slice(slug, -12..-1)
+      {:ok, String.slice(slug, -12..-1)}
     end
   end
 
@@ -27,5 +27,17 @@ defmodule Conduit.Blog.Permalink do
   # Invoked when data is loaded from the database.
   def load(string) do
     {:ok, string}
+  end
+
+  def equal?(term1, term2) when is_binary(term1) and is_binary(term2) do
+    String.slice(term1, -12..-1) == String.slice(term2, -12..-1)
+  end
+
+  def equal?(term1, term2) do
+    term1 === term2
+  end
+
+  def embed_as(_format) do
+    :self
   end
 end

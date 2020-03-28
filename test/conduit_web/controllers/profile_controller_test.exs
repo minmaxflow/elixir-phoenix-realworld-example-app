@@ -59,7 +59,7 @@ defmodule ConduitWeb.ProfileControllerTest do
                json_response(conn, 200)
 
       # follow不存在的用户
-      #     不知道为什么在测试环境不会把Ecto.NoResultsError转换完404错误，也是直接抛出
+      #     不知道为什么在测试环境不会把Ecto.NoResultsError转换完404错误，而是直接抛出
       # conn = post(conn, Routes.profile_path(conn, :follow, "not exist"))
     end
   end

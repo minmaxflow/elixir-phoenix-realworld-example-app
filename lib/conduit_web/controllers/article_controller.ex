@@ -28,12 +28,13 @@ defmodule ConduitWeb.ArticleController do
   end
 
   def show(conn, %{"slug" => slug}, current_user) do
+    # 注意，这个不需要scope to curent_user  
     article = Blog.get_article_by_slug!(current_user, slug)
     render(conn, "show.json", article: article)
   end
 
   def update(conn, %{"slug" => slug, "article" => article_params}, current_user) do
-    article = Blog.get_article_by_slug!(current_user, slug)
+    article = Blog.get_user_article_by_slug!(current_user, slug)
 
     with {:ok, %Article{} = article} <- Blog.update_article(article, article_params) do
       render(conn, "show.json", article: article)
@@ -41,7 +42,7 @@ defmodule ConduitWeb.ArticleController do
   end
 
   def delete(conn, %{"slug" => slug}, current_user) do
-    article = Blog.get_article_by_slug!(current_user, slug)
+    article = Blog.get_user_article_by_slug!(current_user, slug)
 
     with {:ok, %Article{}} <- Blog.delete_article(article) do
       send_resp(conn, :no_content, "")

@@ -24,7 +24,7 @@ defmodule ConduitWeb.Router do
 
     resources "/tags", TagController, only: [:index]
 
-    resources "/articles", TagController, only: [:index, :show], param: "slug"
+    resources "/articles", ArticleController, only: [:index, :show], param: "slug"
   end
 
   scope "/api", ConduitWeb do
@@ -36,6 +36,6 @@ defmodule ConduitWeb.Router do
     post "/api/profiles/:username/follow", ProfileController, :follow
     delete "/api/profiles/:username/follow", ProfileController, :unfollow
 
-    resources "/articles", TagController, only: [:create, :update, :delete], param: "slug"
+    resources "/articles", ArticleController, only: [:create, :update, :delete], param: "slug"
   end
 end

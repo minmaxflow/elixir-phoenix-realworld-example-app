@@ -23,7 +23,7 @@ defmodule Conduit.BlogTest do
       title: "some updated title"
     }
     @invalid_attrs %{
-      title: "12"
+      title: nil
     }
 
     setup _ do

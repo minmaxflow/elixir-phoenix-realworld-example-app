@@ -36,7 +36,7 @@ defmodule Conduit.Blog do
 
   alias Conduit.Blog.Article
 
-  def list_articles(%User{} = _user, _params) do
+  def list_articles(_user, _params) do
     Repo.all(Article)
   end
 
@@ -44,7 +44,12 @@ defmodule Conduit.Blog do
     Repo.get!(Article, id)
   end
 
-  def get_article_by_slug!(%User{} = user, slug) do
+  def get_article_by_slug!(user, slug) do
+    Article
+    |> Repo.get_by!(slug: slug)
+  end
+
+  def get_user_article_by_slug!(%User{} = user, slug) do
     Article
     |> user_article_query(user)
     |> Repo.get_by!(slug: slug)
