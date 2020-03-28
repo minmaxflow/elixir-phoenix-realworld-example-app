@@ -1,5 +1,7 @@
 defmodule Conduit.TestHelpers do
   alias Conduit.Accounts
+  alias Conduit.Accounts.User
+  alias Conduit.Blog
   alias ConduitWeb.Guardian
 
   defp default_user() do
@@ -12,6 +14,16 @@ defmodule Conduit.TestHelpers do
     }
   end
 
+  defp default_article() do
+    num = System.unique_integer([:positive])
+
+    %{
+      title: "this is title#{num}",
+      description: "description",
+      body: "body"
+    }
+  end
+
   def insert_user(attrs \\ %{}) do
     {:ok, user} =
       attrs
@@ -19,6 +31,12 @@ defmodule Conduit.TestHelpers do
       |> Accounts.register_user()
 
     user
+  end
+
+  def insert_article(%User{} = user, attrs \\ %{}) do
+    attrs = Enum.into(attrs, default_article())
+    {:ok, article} = Blog.create_article(user, attrs)
+    article
   end
 
   def login(conn, username) do
