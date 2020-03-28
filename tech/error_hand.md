@@ -27,7 +27,8 @@ If a request fails any validations, expect a 422 and errors in the following for
 对于资源不存在，在Context层会基于`Repo.get!`或者`Repo.get_by!`,抛出`Ecto.NoResultsError`,在`ErrorView`中进行处理
 还有一个可能是从Context层返回`{:error, :not_found}`, 在`FallbackController`进行处理
 
-认证失败, 通过`{:error, :unauthorized}`在`FallbackController`进行处理
+认证失败, 通过`{:error, :unauthorized}`在`FallbackController`进行处理(在登录的时候)
+其他时候通过 `ConduitWeb.AuthErrorHandle`来处理(在Route里面进行拦截)
 
 授权失败, 通过`{:error, :forbidden}`在`FallbackController`进行处理(以现在的情况来说，应该没有这个错误)
 

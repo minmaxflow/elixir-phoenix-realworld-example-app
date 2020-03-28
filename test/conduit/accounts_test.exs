@@ -81,6 +81,14 @@ defmodule Conduit.AccountsTest do
       assert {:ok, _} = Accounts.unfollow_user(user1, user2.username)
       assert %{following: false} = Accounts.get_profile(user1, user2.username)
       assert %{following: false} = Accounts.get_profile(nil, user2.username)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Accounts.get_profile(nil, "not exist")
+      end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Accounts.follow_user(nil, "not exist")
+      end
     end
   end
 end

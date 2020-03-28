@@ -14,13 +14,14 @@ defmodule ConduitWeb.UserControllerTest do
     password: "pwd"
   }
 
-  setup %{conn: conn} do
-    {:ok,
-     conn:
-       conn
-       |> put_req_header("accept", "application/json")
-       |> put_req_header("content-type", "application/json")}
-  end
+  # conn 不需要设定 req_header，应该是Phoenix自动做了设定
+  # setup %{conn: conn} do
+  #   {:ok,
+  #    conn:
+  #      conn
+  #      |> put_req_header("accept", "application/json")
+  #      |> put_req_header("content-type", "application/json")}
+  # end
 
   describe "register user" do
     test "success", %{conn: conn} do
