@@ -4,6 +4,8 @@ defmodule ConduitWeb.ProfileController do
   alias ConduitWeb.Guardian
   alias Conduit.Accounts
 
+  action_fallback ConduitWeb.FallbackController
+
   def action(conn, _) do
     user = Guardian.Plug.current_resource(conn)
     args = [conn, conn.params, user]
