@@ -2,6 +2,7 @@ defmodule Conduit.BlogTest do
   use Conduit.DataCase
 
   alias Conduit.Blog
+  alias Conduit.Accounts
 
   describe "tags" do
     test "get_or_insert_tags" do
@@ -72,6 +73,82 @@ defmodule Conduit.BlogTest do
 
     test "delete_article/1 deletes the article", %{article: article} do
       assert {:ok, %Article{}} = Blog.delete_article(article)
+    end
+
+    test "article fav", %{article: %{slug: slug} = article, user: author} do
+      user = insert_user()
+
+      # init
+      assert %{
+               favorited: false,
+               favorites_count: 0,
+               author: %{
+                 following: false
+               }
+             } = Blog.get_article_by_slug!(user, slug)
+
+      # fav article 
+      assert {:ok, _} = Blog.favorite_article(user, slug)
+
+      assert %{
+               favorited: true,
+               favorites_count: 1,
+               author: %{
+                 following: false
+               }
+             } = Blog.get_article_by_slug!(user, slug)
+
+      # follow user 
+      assert {:ok, _} = Accounts.follow_user(user, author.username)
+
+      assert %{
+               favorited: true,
+               favorites_count: 1,
+               author: %{
+                 following: true
+               }
+             } = Blog.get_article_by_slug!(user, slug)
+
+      # check from third party 
+      other_user = insert_user()
+
+      assert %{
+               favorited: false,
+               favorites_count: 1,
+               author: %{
+                 following: false
+               }
+             } = Blog.get_article_by_slug!(other_user, slug)
+
+      # unfav article 
+      assert {:ok, _} = Blog.unfavorite_article(user, slug)
+
+      assert %{
+               favorited: false,
+               favorites_count: 0,
+               author: %{
+                 following: false
+               }
+             } = Blog.get_article_by_slug!(other_user, slug)
+
+      assert %{
+               favorited: false,
+               favorites_count: 0,
+               author: %{
+                 following: true
+               }
+             } = Blog.get_article_by_slug!(user, slug)
+
+      # unfollow user 
+      assert {:ok, _} = Accounts.unfollow_user(user, author.username)
+
+      assert %{
+               favorited: false,
+               favorites_count: 0,
+               author: %{
+                 following: false
+               }
+             } = Blog.get_article_by_slug!(user, slug)
     end
   end
 end
