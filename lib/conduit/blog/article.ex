@@ -13,6 +13,12 @@ defmodule Conduit.Blog.Article do
     field :slug, Permalink
     field :title, :string
 
+    field :favorited, :boolean, virtual: true, default: false
+    field :favorites_count, :integer, virtual: true, default: 0
+
+    # 为了绕开Ecto的限制，具体请看blog里面的代码
+    field :following, :boolean, virtual: true, default: false
+
     belongs_to :author, User, foreign_key: :author_id
     many_to_many :tags, Tag, join_through: "articles_tags", on_replace: :delete
 

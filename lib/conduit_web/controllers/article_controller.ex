@@ -21,6 +21,9 @@ defmodule ConduitWeb.ArticleController do
 
   def create(conn, %{"article" => article_params}, current_user) do
     with {:ok, %Article{} = article} <- Blog.create_article(current_user, article_params) do
+      # 重新获取一遍
+      article = Blog.get_article_by_slug!(current_user, article.slug)
+
       conn
       |> put_status(:created)
       |> render("show.json", article: article)
@@ -46,6 +49,20 @@ defmodule ConduitWeb.ArticleController do
 
     with {:ok, %Article{}} <- Blog.delete_article(article) do
       send_resp(conn, :no_content, "")
+    end
+  end
+
+  def favorite(conn, %{"slug" => slug}, current_user) do
+    with {:ok, _} <- Blog.favorite_article(current_user, slug) do
+      article = Blog.get_article_by_slug!(current_user, slug)
+      render(conn, "show.json", article: article)
+    end
+  end
+
+  def unfavorite(conn, %{"slug" => slug}, current_user) do
+    with {:ok, _} <- Blog.unfavorite_article(current_user, slug) do
+      article = Blog.get_article_by_slug!(current_user, slug)
+      render(conn, "show.json", article: article)
     end
   end
 end

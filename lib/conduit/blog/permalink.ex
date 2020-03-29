@@ -7,8 +7,7 @@ defmodule Conduit.Blog.Permalink do
   def cast(slug) when is_binary(slug) do
     size = byte_size(slug)
 
-    # title-slug(12)
-    if size < 16 do
+    if size < 12 do
       :error
     else
       {:ok, String.slice(slug, -12..-1)}

@@ -38,10 +38,6 @@ defmodule Conduit.BlogTest do
       {:ok, user: user, article: article}
     end
 
-    test "get_article/1", %{article: article} do
-      assert Blog.get_article!(article.id) == article
-    end
-
     test "create_article/1 with valid data creates a article", %{user: user} do
       assert {:ok, %Article{} = article} = Blog.create_article(user, @valid_attrs)
       assert article.body == "some body"
@@ -72,12 +68,10 @@ defmodule Conduit.BlogTest do
 
     test "update_article/2 with invalid data returns error changeset", %{article: article} do
       assert {:error, %Ecto.Changeset{}} = Blog.update_article(article, @invalid_attrs)
-      assert article == Blog.get_article!(article.id)
     end
 
     test "delete_article/1 deletes the article", %{article: article} do
       assert {:ok, %Article{}} = Blog.delete_article(article)
-      assert_raise Ecto.NoResultsError, fn -> Blog.get_article!(article.id) end
     end
   end
 end

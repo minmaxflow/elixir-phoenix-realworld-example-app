@@ -40,4 +40,12 @@ https://hexdocs.pm/phoenix/Phoenix.Router.html#resources/4
 http://blog.plataformatec.com.br/2015/08/working-with-ecto-associations-and-embeds/
 http://blog.plataformatec.com.br/2016/12/many-to-many-and-upserts/
 
+#### query compose and preloads
 
+https://www.amberbit.com/blog/2019/4/16/composing-ecto-queries-filters-and-preloads/
+
+#### mysql group by 
+
+https://stackoverflow.com/questions/33784786/how-to-check-if-value-exists-in-each-group-after-group-by
+https://dev.mysql.com/doc/refman/5.7/en/group-by-functional-dependence.html
+https://gabi.dev/2016/03/03/group-by-are-you-sure-you-know-it/ 
