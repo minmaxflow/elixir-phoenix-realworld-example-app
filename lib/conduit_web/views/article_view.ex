@@ -2,6 +2,7 @@ defmodule ConduitWeb.ArticleView do
   use ConduitWeb, :view
 
   alias ConduitWeb.ArticleView
+  alias ConduitWeb.TagView
   alias Conduit.Blog.Article
 
   def render("index.json", %{articles: articles}) do
@@ -20,7 +21,8 @@ defmodule ConduitWeb.ArticleView do
       description: article.description,
       body: article.body,
       createdAt: DateTime.to_iso8601(article.created_at),
-      updatedAt: DateTime.to_iso8601(article.updated_at)
+      updatedAt: DateTime.to_iso8601(article.updated_at),
+      tagList: render_many(article.tags, TagView, "tag.json")
     }
   end
 end

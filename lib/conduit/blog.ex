@@ -5,8 +5,9 @@ defmodule Conduit.Blog do
 
   import Ecto
   import Ecto.Query, warn: false
-  alias Conduit.Repo
+  import Ecto.Changeset
 
+  alias Conduit.Repo
   alias Conduit.Blog.Tag
   alias Conduit.Blog.Article
   alias Conduit.Accounts.User
@@ -41,30 +42,42 @@ defmodule Conduit.Blog do
   end
 
   def get_article!(id) do
-    Repo.get!(Article, id)
+    Repo.get!(Article, id) |> Repo.preload([:tags])
   end
 
   def get_article_by_slug!(user, slug) do
     Article
     |> Repo.get_by!(slug: slug)
+    |> Repo.preload([:tags])
   end
 
   def get_user_article_by_slug!(%User{} = user, slug) do
     Article
     |> user_article_query(user)
     |> Repo.get_by!(slug: slug)
+    |> Repo.preload([:tags])
   end
 
-  def create_article(%User{} = user, attrs \\ %{}) do
+  def create_article(%User{} = user, params) do
+    tagList = params["tagList"] || params[:tagList] || []
+    tags = get_or_insert_tags(tagList)
+
     user
     |> build_assoc(:articles)
-    |> Article.changeset(attrs)
+    |> Article.changeset(params)
+    |> put_assoc(:tags, tags)
     |> Repo.insert()
   end
 
-  def update_article(%Article{} = article, attrs) do
+  def update_article(%Article{} = article, params) do
+    tagList = params["tagList"] || params[:tagList] || []
+    tags = get_or_insert_tags(tagList)
+
     article
-    |> Article.changeset(attrs)
+    # in case tags is not preload    
+    |> Repo.preload(:tags)
+    |> Article.changeset(params)
+    |> put_assoc(:tags, tags)
     |> Repo.update()
   end
 

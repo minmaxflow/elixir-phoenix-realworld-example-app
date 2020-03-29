@@ -10,7 +10,7 @@ If a field is given to validate_required/3 but it has not been passed as paramet
 
 https://elixirforum.com/t/ecto-unique-constraint-for-primary-key/3288
 
-#### `belongs_to` and `has_many`
+#### `belongs_to` , `has_many` and `many_to_many`
 
 https://hexdocs.pm/ecto/Ecto.Schema.html#belongs_to/3
 
@@ -23,3 +23,21 @@ https://hexdocs.pm/ecto/Ecto.Schema.html#has_many/3
 ```
 :foreign_key - Sets the foreign key, this should map to a field on the other schema, defaults to the underscored name of the current schema suffixed by _id
 ```
+
+https://hexdocs.pm/ecto/Ecto.Schema.html#many_to_many/3
+```
+:on_replace - The action taken on associations when the record is replaced when casting or manipulating parent changeset. May be :raise (default), :mark_as_invalid, or :delete. :delete will only remove data from the join source, never the associated records. See Ecto.Changeset's section on related data for more info.
+
+```
+
+#### Titled URL Slugs in Phoenix
+
+https://hashrocket.com/blog/posts/titled-url-slugs-in-phoenix
+https://hexdocs.pm/phoenix/Phoenix.Router.html#resources/4
+
+#### association , many to many and upsert 
+
+http://blog.plataformatec.com.br/2015/08/working-with-ecto-associations-and-embeds/
+http://blog.plataformatec.com.br/2016/12/many-to-many-and-upserts/
+
+

@@ -16,11 +16,17 @@ defmodule Conduit.BlogTest do
   describe "articles" do
     alias Conduit.Blog.Article
 
-    @valid_attrs %{body: "some body", description: "some description", title: "some title"}
+    @valid_attrs %{
+      body: "some body",
+      description: "some description",
+      title: "some title",
+      tagList: ["tag1", "tag2"]
+    }
     @update_attrs %{
       body: "some updated body",
       description: "some updated description",
-      title: "some updated title"
+      title: "some updated title",
+      tagList: ["tag2", "tag3"]
     }
     @invalid_attrs %{
       title: nil
@@ -42,6 +48,9 @@ defmodule Conduit.BlogTest do
       assert article.description == "some description"
       assert article.title == "some title"
       assert byte_size(article.slug) == 12
+
+      tags = Enum.map(article.tags, fn tag -> tag.name end)
+      assert Enum.sort(tags) == Enum.sort(@valid_attrs.tagList)
     end
 
     test "create_article/1 with invalid data returns error changeset", %{user: user} do
@@ -51,10 +60,14 @@ defmodule Conduit.BlogTest do
     test "update_article/2 with valid data updates the article", %{
       article: %{slug: slug} = article
     } do
+      # 判断slug没有变
       assert {:ok, %Article{slug: ^slug} = article} = Blog.update_article(article, @update_attrs)
       assert article.body == "some updated body"
       assert article.description == "some updated description"
       assert article.title == "some updated title"
+
+      tags = Enum.map(article.tags, fn tag -> tag.name end)
+      assert Enum.sort(tags) == Enum.sort(@update_attrs.tagList)
     end
 
     test "update_article/2 with invalid data returns error changeset", %{article: article} do

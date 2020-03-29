@@ -8,12 +8,14 @@ defmodule ConduitWeb.ArticleControllerTest do
   @create_attrs %{
     body: "some body",
     description: "some description",
-    title: "some title"
+    title: "some title",
+    tagList: ["tag1", "tag2"]
   }
   @update_attrs %{
     body: "some updated body",
     description: "some updated description",
-    title: "some updated title"
+    title: "some updated title",
+    tagList: ["tag2", "tag3"]
   }
   @invalid_attrs %{body: nil, description: nil, slug: nil, title: nil}
 
@@ -41,8 +43,11 @@ defmodule ConduitWeb.ArticleControllerTest do
                "slug" => ^slug,
                "body" => "some body",
                "description" => "some description",
-               "title" => "some title"
+               "title" => "some title",
+               "tagList" => tagList
              } = json_response(conn, 200)["article"]
+
+      assert Enum.sort(tagList) == Enum.sort(@create_attrs.tagList)
     end
 
     test "renders errors when data is invalid", %{conn: conn} do
@@ -69,8 +74,11 @@ defmodule ConduitWeb.ArticleControllerTest do
                "slug" => new_slug,
                "body" => "some updated body",
                "description" => "some updated description",
-               "title" => "some updated title"
+               "title" => "some updated title",
+               "tagList" => tagList
              } = json_response(conn, 200)["article"]
+
+      assert Enum.sort(tagList) == Enum.sort(@update_attrs.tagList)
     end
 
     test "renders errors when data is invalid", %{conn: conn, article: article} do

@@ -5,6 +5,7 @@ defmodule Conduit.Blog.Article do
   alias Conduit.Blog.Permalink
 
   alias Conduit.Accounts.User
+  alias Conduit.Blog.Tag
 
   schema "articles" do
     field :body, :string
@@ -13,6 +14,7 @@ defmodule Conduit.Blog.Article do
     field :title, :string
 
     belongs_to :author, User, foreign_key: :author_id
+    many_to_many :tags, Tag, join_through: "articles_tags", on_replace: :delete
 
     timestamps()
   end
