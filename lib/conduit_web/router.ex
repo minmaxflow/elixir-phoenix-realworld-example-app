@@ -13,6 +13,13 @@ defmodule ConduitWeb.Router do
     plug ConduitWeb.AuthPipeLine
   end
 
+  # 避免和其他路由冲突，放在最前面
+  scope "/api", ConduitWeb do
+    pipe_through [:api, :auth]
+
+    get "/articles/feed", ArticleController, :feed
+  end
+
   # 可选认证的
   scope "/api", ConduitWeb do
     pipe_through [:api, :opt_auth]
@@ -37,7 +44,6 @@ defmodule ConduitWeb.Router do
     delete "/api/profiles/:username/follow", ProfileController, :unfollow
 
     resources "/articles", ArticleController, only: [:create, :update, :delete], param: "slug"
-    get "/articles/feed", ArticleController, :feed
     post "/api/articles/:slug/favorite", ArticleController, :favorite
     delete "/api/articles/:slug/favorite", ArticleController, :unfavorite
   end

@@ -46,10 +46,9 @@ defmodule Conduit.BlogTest do
     end
 
     test "article list", %{user: author, article: %{slug: slug}} do
-      user = insert_user()
-
       assert [%{slug: ^slug}] = Blog.list_articles(nil, %{})
 
+      user = insert_user()
       %{slug: a1} = insert_article(author, %{tagList: ["tag1", "tag2"]})
       %{slug: a2} = insert_article(user, %{tagList: ["tag2", "tag3"]})
       Blog.favorite_article(user, a1)

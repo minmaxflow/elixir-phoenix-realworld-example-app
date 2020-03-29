@@ -2,6 +2,7 @@ defmodule ConduitWeb.ArticleControllerTest do
   use ConduitWeb.ConnCase
 
   alias Conduit.Blog.Article
+  alias Conduit.Blog
   alias Conduit.Accounts
 
   import ConduitWeb.Guardian
@@ -24,10 +25,40 @@ defmodule ConduitWeb.ArticleControllerTest do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
 
-  describe "index" do
-    test "lists all articles", %{conn: conn} do
+  describe "fech article" do
+    setup [:create_article]
+
+    test "get/index/feed", %{conn: conn, user: author, article: %{slug: slug}} do
+      # not login 
       conn = get(conn, Routes.article_path(conn, :index))
-      assert json_response(conn, 200)["articles"] == []
+      assert [%{"slug" => slug_title}] = json_response(conn, 200)["articles"]
+      assert String.ends_with?(slug_title, slug)
+
+      user = insert_user()
+      %{slug: a1} = insert_article(author, %{tagList: ["tag1", "tag2"]})
+      %{slug: a2} = insert_article(user, %{tagList: ["tag2", "tag3"]})
+      Blog.favorite_article(user, a1)
+
+      conn = get(conn, Routes.article_path(conn, :index, %{tag: "tag3"}))
+      assert [%{"slug" => a2_title}] = json_response(conn, 200)["articles"]
+      assert String.ends_with?(a2_title, a2)
+
+      conn = get(conn, Routes.article_path(conn, :index, %{favorited: user.username}))
+      assert [%{"slug" => a1_title}] = json_response(conn, 200)["articles"]
+      assert String.ends_with?(a1_title, a1)
+
+      conn = get(conn, Routes.article_path(conn, :index, %{author: user.username}))
+      assert [%{"slug" => ^a2_title}] = json_response(conn, 200)["articles"]
+
+      conn = get(conn, Routes.article_path(conn, :index, %{limit: "2"}))
+      assert [_ | _] = json_response(conn, 200)["articles"]
+
+      # login to test feed
+      conn = conn |> recycle()
+      Accounts.follow_user(user, author.username)
+      {:ok, conn: conn} = auth_conn(%{conn: conn, user: user})
+      conn = get(conn, Routes.article_path(conn, :feed))
+      assert [_ | _] = json_response(conn, 200)["articles"]
     end
   end
 
