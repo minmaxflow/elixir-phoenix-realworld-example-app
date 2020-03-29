@@ -12,6 +12,7 @@ defmodule Conduit.Blog do
   alias Conduit.Blog.Tag
   alias Conduit.Blog.Article
   alias Conduit.Blog.Favorite
+  alias Conduit.Blog.Comment
 
   alias Conduit.Accounts.User
   alias Conduit.Accounts.UserFollower
@@ -103,7 +104,7 @@ defmodule Conduit.Blog do
     base_query
     |> order_by_recent()
     |> preload_tag()
-    |> preload_author(current_user)
+    |> preload_article_author(current_user)
     |> preload_favorite(current_user)
     |> maybe_filter_by_tag(filters["tag"])
     |> maybe_filter_by_author(filters["author"])
@@ -119,7 +120,7 @@ defmodule Conduit.Blog do
     from _ in query, preload: [:tags]
   end
 
-  defp preload_author(query, current_user) do
+  defp preload_article_author(query, current_user) do
     # 主键现在都是uuid类型
     uid =
       case current_user do
@@ -209,6 +210,14 @@ defmodule Conduit.Blog do
     )
   end
 
+  defp may_paginate(query, nil, nil) do
+    query
+  end
+
+  defp may_paginate(query, offset, limit) do
+    paginate(query, offset, limit)
+  end
+
   defp paginate(query, offset, limit) do
     offset = String.to_integer(offset || "0")
     limit = String.to_integer(limit || "20")
@@ -266,4 +275,74 @@ defmodule Conduit.Blog do
   end
 
   # comment 
+
+  def list_article_comments(current_user, filters \\ %{}) do
+    base_query = from(c in Comment)
+
+    base_query
+    |> build_comment_query(current_user, filters)
+    |> Repo.all()
+  end
+
+  def get_user_comment!(current_user, id) do
+    base_query = from c in Comment, where: c.id == ^id
+
+    base_query
+    |> build_comment_query(current_user)
+    |> Repo.one!()
+  end
+
+  defp build_comment_query(base_query, current_user, filters \\ %{}) do
+    # 兼容两种格式
+    filters = Enum.into(filters, %{}, fn {key, value} -> {to_string(key), value} end)
+
+    base_query
+    |> preload_comment_author(current_user)
+    |> maybe_filter_by_slug(filters["slug"])
+    # 评论的分页是可选
+    |> may_paginate(filters["offset"], filters["limit"])
+  end
+
+  defp preload_comment_author(query, current_user) do
+    # 主键现在都是uuid类型
+    uid =
+      case current_user do
+        nil -> Ecto.UUID.generate()
+        current_user -> current_user.id
+      end
+
+    # 通过left join来判定是否current_user是否follow评论作者
+    from(comment in query,
+      join: author in assoc(comment, :author),
+      left_join: uf in UserFollower,
+      on: author.id == uf.followee_id and uf.follower_id == ^uid,
+      preload: [author: author],
+      select_merge: %{
+        following: not is_nil(uf.follower_id)
+      }
+    )
+  end
+
+  defp maybe_filter_by_slug(query, nil) do
+    query
+  end
+
+  defp maybe_filter_by_slug(query, slug) do
+    from c in query,
+      join: a in assoc(c, :article),
+      where: a.slug == ^slug
+  end
+
+  def create_user_comment(%User{id: user_id}, attrs) do
+    slug = Map.get(attrs, "slug") || Map.get(attrs, :slug)
+    article = Repo.get_by!(Article, slug: slug)
+
+    %Comment{author_id: user_id, article_id: article.id}
+    |> Comment.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  def delete_comment(%Comment{} = comment) do
+    Repo.delete(comment)
+  end
 end

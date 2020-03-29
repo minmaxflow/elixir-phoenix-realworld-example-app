@@ -6,6 +6,7 @@ defmodule Conduit.Blog.Article do
 
   alias Conduit.Accounts.User
   alias Conduit.Blog.Tag
+  alias Conduit.Blog.Comment
 
   schema "articles" do
     field :body, :string
@@ -19,7 +20,8 @@ defmodule Conduit.Blog.Article do
     # 为了绕开Ecto的限制，具体请看blog里面的代码
     field :following, :boolean, virtual: true, default: false
 
-    belongs_to :author, User, foreign_key: :author_id
+    belongs_to :author, User
+    has_many :comments, Comment
     many_to_many :tags, Tag, join_through: "articles_tags", on_replace: :delete
 
     timestamps()

@@ -24,6 +24,12 @@ defmodule Conduit.TestHelpers do
     }
   end
 
+  defp default_comment() do
+    %{
+      body: "comment body"
+    }
+  end
+
   def insert_user(attrs \\ %{}) do
     {:ok, user} =
       attrs
@@ -37,6 +43,13 @@ defmodule Conduit.TestHelpers do
     attrs = Enum.into(attrs, default_article())
     {:ok, article} = Blog.create_article(user, attrs)
     article
+  end
+
+  def insert_comment(%User{} = user, article, attrs \\ %{}) do
+    attrs = Enum.into(attrs, default_comment())
+    attrs = Map.put(attrs, :slug, article.slug)
+    {:ok, comment} = Blog.create_user_comment(user, attrs)
+    comment
   end
 
   def login(conn, username) do

@@ -177,4 +177,51 @@ defmodule Conduit.BlogTest do
              } = Blog.get_article_by_slug!(user, slug)
     end
   end
+
+  describe "comments" do
+    alias Conduit.Blog.Comment
+
+    @valid_attrs %{body: "some body"}
+    @invalid_attrs %{body: nil}
+
+    setup %{} do
+      user = insert_user()
+      article = insert_article(user)
+      comment = insert_comment(user, article)
+      {:ok, user: user, article: article, comment: comment}
+    end
+
+    test "list_comments/0 returns all comments", %{
+      user: user,
+      article: article,
+      comment: %{id: id}
+    } do
+      assert [%{id: ^id}] = Blog.list_article_comments(nil)
+      assert [%{id: ^id}] = Blog.list_article_comments(user, %{slug: article.slug})
+    end
+
+    test "get_comment!/1 returns the comment with given id", %{comment: %{id: id}} do
+      assert %{id: ^id} = Blog.get_user_comment!(nil, id)
+    end
+
+    test "create_comment/1 with valid data creates a comment", %{user: user, article: article} do
+      assert {:ok, %Comment{} = comment} =
+               Blog.create_user_comment(user, Map.put(@valid_attrs, :slug, article.slug))
+
+      assert comment.body == "some body"
+    end
+
+    test "create_comment/1 with invalid data returns error changeset", %{
+      user: user,
+      article: article
+    } do
+      assert {:error, %Ecto.Changeset{}} =
+               Blog.create_user_comment(user, Map.put(@invalid_attrs, :slug, article.slug))
+    end
+
+    test "delete_comment/1 deletes the comment", %{comment: comment} do
+      assert {:ok, %Comment{}} = Blog.delete_comment(comment)
+      assert_raise Ecto.NoResultsError, fn -> Blog.get_user_comment!(nil, comment.id) end
+    end
+  end
 end
