@@ -115,16 +115,29 @@ defmodule Conduit.Blog do
 
     # 为了能够count，需要group_by
     #   其中article.id肯定是需要的，但是没有uf.follower_id, mysql会报错，uf.follower_id是一个常量，所以放入里面也没有问题
-    # 同时注意 position binding 对调用顺序的依赖
-    from([article, _, uf] in query,
-      left_join: fav in Favorite,
-      on: fav.article_id == article.id,
-      group_by: [article.id, uf.follower_id],
-      select_merge: %{
-        favorites_count: count(fav.user_id),
-        favorited: fragment("max(case ? when ? then 1 else 0 end  ) = 1", fav.user_id, ^uid) != 0
-      }
-    )
+    # 注意 
+    #   1 position binding 对调用顺序的依赖
+    #   2 binary_id类型在fragment里面使用需要明确进行type cast
+    query =
+      from([article, _, uf] in query,
+        left_join: fav in Favorite,
+        on: fav.article_id == article.id,
+        group_by: [article.id, uf.follower_id],
+        select_merge: %{
+          favorites_count: count(fav.user_id),
+          favorited:
+            fragment(
+              "max(case ? when ? then 1 else 0 end  ) = 1",
+              fav.user_id,
+              type(^uid, :binary_id)
+            ) != 0
+        }
+      )
+
+    # debug sql 
+    # Repo.to_sql(:all, query) |> IO.inspect()
+
+    query
   end
 
   defp maybe_filter_by_tag(query, nil), do: query
