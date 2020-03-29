@@ -16,6 +16,8 @@ defmodule Conduit.Blog do
   alias Conduit.Accounts.User
   alias Conduit.Accounts.UserFollower
 
+  # tag
+
   def list_tags do
     Repo.all(Tag)
   end
@@ -38,10 +40,32 @@ defmodule Conduit.Blog do
     Repo.all(from t in Tag, where: t.name in ^names)
   end
 
-  alias Conduit.Blog.Article
+  # article
 
-  def list_articles(_user, _params) do
-    Repo.all(Article)
+  def list_articles(current_user, filters \\ %{}) do
+    base_query = from(a in Article)
+
+    base_query
+    |> build_article_query(current_user, filters)
+    |> Repo.all()
+    |> fix_author_following()
+  end
+
+  def list_feed_articles(current_user, filters \\ %{}) do
+    base_query = from(a in Article)
+
+    base_query
+    |> build_article_query(current_user, filters)
+    |> follow_query(current_user)
+    |> Repo.all()
+    |> fix_author_following()
+  end
+
+  # 注意：SQL没有那么智能，不要重复Join相同的表，否则group那块会有问题
+  defp follow_query(query, current_user) do
+    # 限制是当前用户follow的用户
+    from [_, u, uf] in query,
+      where: uf.follower_id == ^current_user.id and uf.followee_id == u.id
   end
 
   def get_article_by_slug!(current_user, slug) do
@@ -54,7 +78,9 @@ defmodule Conduit.Blog do
   end
 
   def get_user_article_by_slug!(%User{} = current_user, slug) do
-    base_query = from a in Article, where: a.slug == ^slug and a.author_id == ^current_user.id
+    base_query =
+      from a in Article,
+        where: a.slug == ^slug and a.author_id == ^current_user.id
 
     base_query
     |> build_article_query(current_user)
@@ -62,17 +88,31 @@ defmodule Conduit.Blog do
     |> fix_author_following()
   end
 
+  defp fix_author_following(articles) when is_list(articles) do
+    Enum.map(articles, &fix_author_following(&1))
+  end
+
   defp fix_author_following(article) do
     %{article | author: %{article.author | following: article.following}}
   end
 
   defp build_article_query(base_query, current_user, filters \\ %{}) do
+    # 兼容两种格式
+    filters = Enum.into(filters, %{}, fn {key, value} -> {to_string(key), value} end)
+
     base_query
+    |> order_by_recent()
     |> preload_tag()
     |> preload_author(current_user)
     |> preload_favorite(current_user)
-    |> maybe_filter_by_tag(filters[:tag])
-    |> maybe_filter_by_author(filters[:author])
+    |> maybe_filter_by_tag(filters["tag"])
+    |> maybe_filter_by_author(filters["author"])
+    |> maybe_filter_by_favorited(filters["favorited"])
+    |> paginate(filters["offset"], filters["limit"])
+  end
+
+  defp order_by_recent(query) do
+    from a in query, order_by: [desc: a.created_at]
   end
 
   defp preload_tag(query) do
@@ -89,8 +129,7 @@ defmodule Conduit.Blog do
 
     # 通过left join来判定是否current_user是否follow文章作者
     from(article in query,
-      join: author in User,
-      on: author.id == article.author_id,
+      join: author in assoc(article, :author),
       left_join: uf in UserFollower,
       on: author.id == uf.followee_id and uf.follower_id == ^uid,
       # preload: [author: %{author | following: not is_nil(uf.follower_id)}]       
@@ -154,11 +193,30 @@ defmodule Conduit.Blog do
   defp maybe_filter_by_author(query, author_name) do
     from(article in query,
       join: author in assoc(article, :author),
-      where: author.name == ^author_name
+      where: author.username == ^author_name
     )
   end
 
-  # todo 
+  defp maybe_filter_by_favorited(query, nil), do: query
+
+  defp maybe_filter_by_favorited(query, user_name) do
+    from(article in query,
+      join: fav in Favorite,
+      on: article.id == fav.article_id,
+      join: u in User,
+      on: fav.user_id == u.id,
+      where: u.username == ^user_name
+    )
+  end
+
+  defp paginate(query, offset, limit) do
+    offset = String.to_integer(offset || "0")
+    limit = String.to_integer(limit || "20")
+
+    query
+    |> limit(^limit)
+    |> offset(^offset)
+  end
 
   # article create|update|delete
 

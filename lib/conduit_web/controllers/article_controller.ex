@@ -19,6 +19,17 @@ defmodule ConduitWeb.ArticleController do
     render(conn, "index.json", articles: articles)
   end
 
+  def feed(conn, params, current_user) do
+    articles = Blog.list_feed_articles(current_user, params)
+    render(conn, "index.json", articles: articles)
+  end
+
+  def show(conn, %{"slug" => slug}, current_user) do
+    # 注意，这个不需要scope to curent_user  
+    article = Blog.get_article_by_slug!(current_user, slug)
+    render(conn, "show.json", article: article)
+  end
+
   def create(conn, %{"article" => article_params}, current_user) do
     with {:ok, %Article{} = article} <- Blog.create_article(current_user, article_params) do
       # 重新获取一遍
@@ -28,12 +39,6 @@ defmodule ConduitWeb.ArticleController do
       |> put_status(:created)
       |> render("show.json", article: article)
     end
-  end
-
-  def show(conn, %{"slug" => slug}, current_user) do
-    # 注意，这个不需要scope to curent_user  
-    article = Blog.get_article_by_slug!(current_user, slug)
-    render(conn, "show.json", article: article)
   end
 
   def update(conn, %{"slug" => slug, "article" => article_params}, current_user) do

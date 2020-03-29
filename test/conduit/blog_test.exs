@@ -39,6 +39,33 @@ defmodule Conduit.BlogTest do
       {:ok, user: user, article: article}
     end
 
+    test "get_article_by_slug/1", %{user: user, article: %{slug: slug}} do
+      assert %{
+               slug: ^slug
+             } = Blog.get_article_by_slug!(user, slug)
+    end
+
+    test "article list", %{user: author, article: %{slug: slug}} do
+      user = insert_user()
+
+      assert [%{slug: ^slug}] = Blog.list_articles(nil, %{})
+
+      %{slug: a1} = insert_article(author, %{tagList: ["tag1", "tag2"]})
+      %{slug: a2} = insert_article(user, %{tagList: ["tag2", "tag3"]})
+      Blog.favorite_article(user, a1)
+
+      assert [%{slug: ^a2}] = Blog.list_articles(nil, %{tag: "tag3"})
+      assert [%{slug: ^a1}] = Blog.list_articles(nil, %{favorited: user.username})
+      assert [%{slug: ^a2}] = Blog.list_articles(nil, %{author: user.username})
+
+      articles = Blog.list_articles(nil, %{limit: "2"})
+      assert length(articles) == 2
+
+      Accounts.follow_user(user, author.username)
+      articles = Blog.list_feed_articles(user, %{})
+      assert length(articles) == 2
+    end
+
     test "create_article/1 with valid data creates a article", %{user: user} do
       assert {:ok, %Article{} = article} = Blog.create_article(user, @valid_attrs)
       assert article.body == "some body"
@@ -75,7 +102,7 @@ defmodule Conduit.BlogTest do
       assert {:ok, %Article{}} = Blog.delete_article(article)
     end
 
-    test "article fav", %{article: %{slug: slug} = article, user: author} do
+    test "article fav", %{article: %{slug: slug}, user: author} do
       user = insert_user()
 
       # init

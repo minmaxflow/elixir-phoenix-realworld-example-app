@@ -37,6 +37,7 @@ defmodule ConduitWeb.Router do
     delete "/api/profiles/:username/follow", ProfileController, :unfollow
 
     resources "/articles", ArticleController, only: [:create, :update, :delete], param: "slug"
+    get "/articles/feed", ArticleController, :feed
     post "/api/articles/:slug/favorite", ArticleController, :favorite
     delete "/api/articles/:slug/favorite", ArticleController, :unfavorite
   end
