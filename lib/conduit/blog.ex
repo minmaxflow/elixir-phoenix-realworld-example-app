@@ -202,7 +202,7 @@ defmodule Conduit.Blog do
   def unfavorite_article(%User{id: user_id}, slug) do
     article = Repo.get_by!(Article, slug: slug)
 
-    favorite = Repo.get_by!(Favorite, user_id: user_id, article: article.id)
+    favorite = Repo.get_by!(Favorite, user_id: user_id, article_id: article.id)
 
     Repo.delete(favorite)
   end

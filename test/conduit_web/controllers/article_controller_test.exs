@@ -2,6 +2,7 @@ defmodule ConduitWeb.ArticleControllerTest do
   use ConduitWeb.ConnCase
 
   alias Conduit.Blog.Article
+  alias Conduit.Accounts
 
   import ConduitWeb.Guardian
 
@@ -97,6 +98,48 @@ defmodule ConduitWeb.ArticleControllerTest do
       assert_error_sent 404, fn ->
         get(conn, Routes.article_path(conn, :show, article))
       end
+    end
+  end
+
+  describe "fav article" do
+    setup [:create_article]
+
+    test "test fav/unfav/follow/unfollow", %{conn: conn, article: article, user: author} do
+      user = insert_user()
+
+      assert {:ok, conn: conn} = auth_conn(%{conn: conn, user: user})
+
+      conn = post(conn, Routes.article_path(conn, :favorite, article))
+
+      assert %{
+               "favorited" => true,
+               "favoritesCount" => 1,
+               "author" => %{
+                 "following" => false
+               }
+             } = json_response(conn, 200)["article"]
+
+      conn = delete(conn, Routes.article_path(conn, :unfavorite, article))
+
+      assert %{
+               "favorited" => false,
+               "favoritesCount" => 0,
+               "author" => %{
+                 "following" => false
+               }
+             } = json_response(conn, 200)["article"]
+
+      Accounts.follow_user(user, author.username)
+
+      conn = post(conn, Routes.article_path(conn, :favorite, article))
+
+      assert %{
+               "favorited" => true,
+               "favoritesCount" => 1,
+               "author" => %{
+                 "following" => true
+               }
+             } = json_response(conn, 200)["article"]
     end
   end
 
