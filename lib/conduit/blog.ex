@@ -49,7 +49,7 @@ defmodule Conduit.Blog do
     base_query
     |> build_article_query(current_user, filters)
     |> Repo.all()
-    |> fix_author_following()
+    |> fix_article_author_following()
   end
 
   def list_feed_articles(current_user, filters \\ %{}) do
@@ -59,7 +59,7 @@ defmodule Conduit.Blog do
     |> build_article_query(current_user, filters)
     |> follow_query(current_user)
     |> Repo.all()
-    |> fix_author_following()
+    |> fix_article_author_following()
   end
 
   # 注意：SQL没有那么智能，不要重复Join相同的表，否则group那块会有问题
@@ -75,7 +75,7 @@ defmodule Conduit.Blog do
     base_query
     |> build_article_query(current_user)
     |> Repo.one!()
-    |> fix_author_following()
+    |> fix_article_author_following()
   end
 
   def get_user_article_by_slug!(%User{} = current_user, slug) do
@@ -86,14 +86,14 @@ defmodule Conduit.Blog do
     base_query
     |> build_article_query(current_user)
     |> Repo.one!()
-    |> fix_author_following()
+    |> fix_article_author_following()
   end
 
-  defp fix_author_following(articles) when is_list(articles) do
-    Enum.map(articles, &fix_author_following(&1))
+  defp fix_article_author_following(articles) when is_list(articles) do
+    Enum.map(articles, &fix_article_author_following(&1))
   end
 
-  defp fix_author_following(article) do
+  defp fix_article_author_following(article) do
     %{article | author: %{article.author | following: article.following}}
   end
 
@@ -282,9 +282,29 @@ defmodule Conduit.Blog do
     base_query
     |> build_comment_query(current_user, filters)
     |> Repo.all()
+    |> fix_comment_author_following()
   end
 
-  defp build_comment_query(base_query, current_user, filters \\ %{}) do
+  def get_comment!(current_user, slug, comment_id) do
+    base_query = from c in Comment, where: c.id == ^comment_id
+
+    filters = %{slug: slug}
+
+    base_query
+    |> build_comment_query(current_user, filters)
+    |> Repo.one!()
+    |> fix_comment_author_following()
+  end
+
+  defp fix_comment_author_following(comments) when is_list(comments) do
+    Enum.map(comments, &fix_comment_author_following(&1))
+  end
+
+  defp fix_comment_author_following(comment) do
+    %{comment | author: %{comment.author | following: comment.following}}
+  end
+
+  defp build_comment_query(base_query, current_user, filters) do
     # 兼容两种格式
     filters = Enum.into(filters, %{}, fn {key, value} -> {to_string(key), value} end)
 
@@ -323,11 +343,6 @@ defmodule Conduit.Blog do
     from c in query,
       join: a in assoc(c, :article),
       where: a.slug == ^slug
-  end
-
-  def get_comment!(%User{id: user_id}, slug, comment_id) do
-    article = Repo.get_by!(Article, slug: slug)
-    Repo.get_by!(Comment, author_id: user_id, article_id: article.id)
   end
 
   def create_user_comment(%User{id: user_id}, slug, attrs) do

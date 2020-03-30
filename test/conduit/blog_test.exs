@@ -192,12 +192,18 @@ defmodule Conduit.BlogTest do
     end
 
     test "list_comments/0 returns all comments", %{
-      user: user,
-      article: article,
+      user: %{username: authorname},
+      article: %{slug: slug},
       comment: %{id: id}
     } do
-      assert [%{id: ^id}] = Blog.list_article_comments(nil)
-      assert [%{id: ^id}] = Blog.list_article_comments(user, %{slug: article.slug})
+      assert [%{id: ^id, author: %{username: ^authorname, following: false}}] =
+               Blog.list_article_comments(nil, %{slug: slug})
+
+      user = insert_user()
+      Accounts.follow_user(user, authorname)
+
+      assert [%{id: ^id, author: %{username: ^authorname, following: true}}] =
+               Blog.list_article_comments(user, %{slug: slug})
     end
 
     test "get_comment!/1 returns the comment with given id", %{

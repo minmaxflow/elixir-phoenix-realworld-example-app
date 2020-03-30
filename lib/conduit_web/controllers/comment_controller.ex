@@ -27,6 +27,8 @@ defmodule ConduitWeb.CommentController do
   def create(conn, %{"slug" => slug, "comment" => comment_params}, current_user) do
     with {:ok, %Comment{} = comment} <-
            Blog.create_user_comment(current_user, slug, comment_params) do
+      comment = Blog.get_comment!(current_user, slug, comment.id)
+
       conn
       |> put_status(:created)
       |> render("show.json", comment: comment)
