@@ -200,13 +200,17 @@ defmodule Conduit.BlogTest do
       assert [%{id: ^id}] = Blog.list_article_comments(user, %{slug: article.slug})
     end
 
-    test "get_comment!/1 returns the comment with given id", %{comment: %{id: id}} do
-      assert %{id: ^id} = Blog.get_user_comment!(nil, id)
+    test "get_comment!/1 returns the comment with given id", %{
+      user: user,
+      article: article,
+      comment: %{id: id}
+    } do
+      assert %{id: ^id} = Blog.get_comment!(user, article.slug, id)
     end
 
     test "create_comment/1 with valid data creates a comment", %{user: user, article: article} do
       assert {:ok, %Comment{} = comment} =
-               Blog.create_user_comment(user, Map.put(@valid_attrs, :slug, article.slug))
+               Blog.create_user_comment(user, article.slug, @valid_attrs)
 
       assert comment.body == "some body"
     end
@@ -216,12 +220,15 @@ defmodule Conduit.BlogTest do
       article: article
     } do
       assert {:error, %Ecto.Changeset{}} =
-               Blog.create_user_comment(user, Map.put(@invalid_attrs, :slug, article.slug))
+               Blog.create_user_comment(user, article.slug, @invalid_attrs)
     end
 
-    test "delete_comment/1 deletes the comment", %{comment: comment} do
+    test "delete_comment/1 deletes the comment", %{user: user, article: article, comment: comment} do
       assert {:ok, %Comment{}} = Blog.delete_comment(comment)
-      assert_raise Ecto.NoResultsError, fn -> Blog.get_user_comment!(nil, comment.id) end
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Blog.get_comment!(user, article.slug, comment.id)
+      end
     end
   end
 end

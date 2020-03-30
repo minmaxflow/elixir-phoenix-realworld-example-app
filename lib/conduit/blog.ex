@@ -284,14 +284,6 @@ defmodule Conduit.Blog do
     |> Repo.all()
   end
 
-  def get_user_comment!(current_user, id) do
-    base_query = from c in Comment, where: c.id == ^id
-
-    base_query
-    |> build_comment_query(current_user)
-    |> Repo.one!()
-  end
-
   defp build_comment_query(base_query, current_user, filters \\ %{}) do
     # 兼容两种格式
     filters = Enum.into(filters, %{}, fn {key, value} -> {to_string(key), value} end)
@@ -333,8 +325,12 @@ defmodule Conduit.Blog do
       where: a.slug == ^slug
   end
 
-  def create_user_comment(%User{id: user_id}, attrs) do
-    slug = Map.get(attrs, "slug") || Map.get(attrs, :slug)
+  def get_comment!(%User{id: user_id}, slug, comment_id) do
+    article = Repo.get_by!(Article, slug: slug)
+    Repo.get_by!(Comment, author_id: user_id, article_id: article.id)
+  end
+
+  def create_user_comment(%User{id: user_id}, slug, attrs) do
     article = Repo.get_by!(Article, slug: slug)
 
     %Comment{author_id: user_id, article_id: article.id}

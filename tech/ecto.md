@@ -49,3 +49,7 @@ https://www.amberbit.com/blog/2019/4/16/composing-ecto-queries-filters-and-prelo
 https://stackoverflow.com/questions/33784786/how-to-check-if-value-exists-in-each-group-after-group-by
 https://dev.mysql.com/doc/refman/5.7/en/group-by-functional-dependence.html
 https://gabi.dev/2016/03/03/group-by-are-you-sure-you-know-it/ 
+
+#### `select_merge`
+
+https://medium.com/flatiron-labs/til-how-to-select-merge-with-ecto-query-679d03204b9d

@@ -47,8 +47,7 @@ defmodule Conduit.TestHelpers do
 
   def insert_comment(%User{} = user, article, attrs \\ %{}) do
     attrs = Enum.into(attrs, default_comment())
-    attrs = Map.put(attrs, :slug, article.slug)
-    {:ok, comment} = Blog.create_user_comment(user, attrs)
+    {:ok, comment} = Blog.create_user_comment(user, article.slug, attrs)
     comment
   end
 
