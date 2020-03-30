@@ -40,5 +40,7 @@ defmodule ConduitWeb.Endpoint do
     key: "_conduit_key",
     signing_salt: "TkPU0jxp"
 
+  plug Corsica, origins: "*"
+
   plug ConduitWeb.Router
 end
