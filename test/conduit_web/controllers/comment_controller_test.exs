@@ -1,88 +1,70 @@
 defmodule ConduitWeb.CommentControllerTest do
   use ConduitWeb.ConnCase
 
-  alias Conduit.Blog
-  alias Conduit.Blog.Comment
+  import ConduitWeb.Guardian
 
   @create_attrs %{
-    blog: "some blog"
+    body: "some body"
   }
-  @update_attrs %{
-    blog: "some updated blog"
-  }
-  @invalid_attrs %{blog: nil}
+  @invalid_attrs %{body: nil}
 
-  # def fixture(:comment) do
-  #   {:ok, comment} = Blog.create_comment(@create_attrs)
-  #   comment
-  # end
+  describe "index" do
+    setup [:create_comment]
 
-  # setup %{conn: conn} do
-  #   {:ok, conn: put_req_header(conn, "accept", "application/json")}
-  # end
+    test "lists all comments", %{conn: conn, article: article, comment: %{id: id}} do
+      conn = get(conn, Routes.article_comment_path(conn, :index, article))
+      assert [%{"id" => ^id}] = json_response(conn, 200)["comments"]
+    end
+  end
 
-  # describe "index" do
-  #   test "lists all comments", %{conn: conn} do
-  #     conn = get(conn, Routes.comment_path(conn, :index))
-  #     assert json_response(conn, 200)["data"] == []
-  #   end
-  # end
+  describe "create comment" do
+    setup [:create_comment, :auth_conn]
 
-  # describe "create comment" do
-  #   test "renders comment when data is valid", %{conn: conn} do
-  #     conn = post(conn, Routes.comment_path(conn, :create), comment: @create_attrs)
-  #     assert %{"id" => id} = json_response(conn, 201)["data"]
+    test "renders comment when data is valid", %{conn: conn, article: article} do
+      conn =
+        post(conn, Routes.article_comments_path(conn, :create, article), comment: @create_attrs)
 
-  #     conn = get(conn, Routes.comment_path(conn, :show, id))
+      assert %{"id" => id} = json_response(conn, 201)["comment"]
 
-  #     assert %{
-  #              "id" => id,
-  #              "blog" => "some blog"
-  #            } = json_response(conn, 200)["data"]
-  #   end
+      conn = get(conn, Routes.article_comments_path(conn, :show, id))
 
-  #   test "renders errors when data is invalid", %{conn: conn} do
-  #     conn = post(conn, Routes.comment_path(conn, :create), comment: @invalid_attrs)
-  #     assert json_response(conn, 422)["errors"] != %{}
-  #   end
-  # end
+      assert %{
+               "id" => ^id,
+               "body" => "some body"
+             } = json_response(conn, 200)["comment"]
+    end
 
-  # describe "update comment" do
-  #   setup [:create_comment]
+    test "renders errors when data is invalid", %{conn: conn, article: article} do
+      conn =
+        post(conn, Routes.article_comments_path(conn, :create, article), comment: @invalid_attrs)
 
-  #   test "renders comment when data is valid", %{conn: conn, comment: %Comment{id: id} = comment} do
-  #     conn = put(conn, Routes.comment_path(conn, :update, comment), comment: @update_attrs)
-  #     assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert json_response(conn, 422)["errors"] != %{}
+    end
+  end
 
-  #     conn = get(conn, Routes.comment_path(conn, :show, id))
+  describe "delete comment" do
+    setup [:create_comment]
 
-  #     assert %{
-  #              "id" => id,
-  #              "blog" => "some updated blog"
-  #            } = json_response(conn, 200)["data"]
-  #   end
+    test "deletes chosen comment", %{conn: conn, article: article, comment: comment} do
+      conn = delete(conn, Routes.article_comments_path(conn, :delete, article, comment))
+      assert response(conn, 204)
+    end
+  end
 
-  #   test "renders errors when data is invalid", %{conn: conn, comment: comment} do
-  #     conn = put(conn, Routes.comment_path(conn, :update, comment), comment: @invalid_attrs)
-  #     assert json_response(conn, 422)["errors"] != %{}
-  #   end
-  # end
+  defp create_comment(_) do
+    user = insert_user()
+    article = insert_article(user)
+    comment = insert_comment(user, article)
+    {:ok, user: user, article: article, comment: comment}
+  end
 
-  # describe "delete comment" do
-  #   setup [:create_comment]
+  defp auth_conn(%{conn: conn, user: user}) do
+    {:ok, token, _} = encode_and_sign(user)
 
-  #   test "deletes chosen comment", %{conn: conn, comment: comment} do
-  #     conn = delete(conn, Routes.comment_path(conn, :delete, comment))
-  #     assert response(conn, 204)
+    conn =
+      conn
+      |> put_req_header("authorization", "Token " <> token)
 
-  #     assert_error_sent 404, fn ->
-  #       get(conn, Routes.comment_path(conn, :show, comment))
-  #     end
-  #   end
-  # end
-
-  # defp create_comment(_) do
-  #   comment = fixture(:comment)
-  #   {:ok, comment: comment}
-  # end
+    {:ok, conn: conn}
+  end
 end

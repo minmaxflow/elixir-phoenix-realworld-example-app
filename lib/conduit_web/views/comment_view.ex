@@ -1,6 +1,8 @@
 defmodule ConduitWeb.CommentView do
   use ConduitWeb, :view
+
   alias ConduitWeb.CommentView
+  alias ConduitWeb.ProfileView
 
   def render("index.json", %{comments: comments}) do
     %{comments: render_many(comments, CommentView, "comment.json")}

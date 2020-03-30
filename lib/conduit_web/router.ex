@@ -32,7 +32,7 @@ defmodule ConduitWeb.Router do
     resources "/tags", TagController, only: [:index]
 
     resources "/articles", ArticleController, only: [:index, :show], param: "slug" do
-      resources "/comments", CommentsController, only: [:index]
+      resources "/comments", CommentController, only: [:index]
     end
   end
 
@@ -46,7 +46,7 @@ defmodule ConduitWeb.Router do
     delete "/api/profiles/:username/follow", ProfileController, :unfollow
 
     resources "/articles", ArticleController, only: [:create, :update, :delete], param: "slug" do
-      resources "/comments", CommentsController, only: [:create, :delete]
+      resources "/comments", CommentController, only: [:create, :delete]
     end
 
     post "/api/articles/:slug/favorite", ArticleController, :favorite
